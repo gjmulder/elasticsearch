@@ -213,4 +213,10 @@ public class GeoHashGridParser implements Aggregator.Parser {
         return null;
     }
 
+    // NORELEASE implement this method when refactoring this aggregation
+    @Override
+    public AggregatorFactory getFactoryPrototype() {
+        return null;
+    }
+
 }

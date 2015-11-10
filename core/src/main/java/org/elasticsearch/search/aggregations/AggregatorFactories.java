@@ -32,6 +32,7 @@ import org.elasticsearch.search.aggregations.support.AggregationPath.PathElement
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -147,7 +148,7 @@ public class AggregatorFactories extends ToXContentToBytes implements Writeable<
         /**
          * FOR TESTING ONLY
          */
-        public Builder skipResolveOrder() {
+        Builder skipResolveOrder() {
             this.skipResolveOrder = true;
             return this;
         }
@@ -276,7 +277,8 @@ public class AggregatorFactories extends ToXContentToBytes implements Writeable<
             PipelineAggregatorFactory factory = in.readPipelineAggregatorFactory();
             pipelineAggregatorFactoriesList.add(factory);
         }
-        AggregatorFactories aggregatorFactories = new AggregatorFactories(factoriesList, pipelineAggregatorFactoriesList);
+        AggregatorFactories aggregatorFactories = new AggregatorFactories(factoriesList,
+                Collections.unmodifiableList(pipelineAggregatorFactoriesList));
         return aggregatorFactories;
     }
 

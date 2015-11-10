@@ -71,6 +71,13 @@ public abstract class AggregatorFactory extends ToXContentToBytes implements Nam
         this.factories.init(context);
     }
 
+    /**
+     * Allows the {@link AggregatorFactory} to initialize any state prior to
+     * using it to create {@link Aggregator}s.
+     * 
+     * @param context
+     *            the {@link AggregationContext} to use during initialization.
+     */
     protected void doInit(AggregationContext context) {
     }
 

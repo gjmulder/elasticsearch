@@ -622,6 +622,20 @@ public abstract class StreamInput extends InputStream {
     }
 
     /**
+     * Reads a {@link AggregatorFactory} from the current stream
+     */
+    public AggregatorFactory readAggregatorFactory() throws IOException {
+        return readNamedWriteable(AggregatorFactory.class);
+    }
+
+    /**
+     * Reads a {@link PipelineAggregatorFactory} from the current stream
+     */
+    public PipelineAggregatorFactory readPipelineAggregatorFactory() throws IOException {
+        return readNamedWriteable(PipelineAggregatorFactory.class);
+    }
+
+    /**
      * Reads a {@link QueryBuilder} from the current stream
      */
     public QueryBuilder readQuery() throws IOException {

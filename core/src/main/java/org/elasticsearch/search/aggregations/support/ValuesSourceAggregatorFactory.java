@@ -300,7 +300,7 @@ public abstract class ValuesSourceAggregatorFactory<VS extends ValuesSource> ext
     public void doWriteTo(StreamOutput out) throws IOException {
         out.writeOptionalString(valuesSourceType.getName()); // NOCOMMIT write
                                                              // this properly
-        boolean hasTargetValueType = valueType != null;
+        boolean hasTargetValueType = targetValueType != null;
         out.writeBoolean(hasTargetValueType);
         if (hasTargetValueType) {
             targetValueType.writeTo(out);

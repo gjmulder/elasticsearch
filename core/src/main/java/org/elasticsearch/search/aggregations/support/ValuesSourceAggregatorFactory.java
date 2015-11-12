@@ -59,7 +59,7 @@ public abstract class ValuesSourceAggregatorFactory<VS extends ValuesSource> ext
             super(name, type, input);
         }
 
-        protected LeafOnly(String name, String type, Class<VS> valuesSourceType, ValueType targetValueType) {
+        protected LeafOnly(String name, String type, ValuesSourceType valuesSourceType, ValueType targetValueType) {
             super(name, type, valuesSourceType, targetValueType);
         }
 
@@ -69,7 +69,7 @@ public abstract class ValuesSourceAggregatorFactory<VS extends ValuesSource> ext
         }
     }
 
-    private final Class<VS> valuesSourceType;
+    private final ValuesSourceType valuesSourceType;
     private final ValueType targetValueType;
     private String field = null;
     private Script script = null;
@@ -98,7 +98,7 @@ public abstract class ValuesSourceAggregatorFactory<VS extends ValuesSource> ext
         this.timeZone = input.timezone;
     }
 
-    protected ValuesSourceAggregatorFactory(String name, String type, Class<VS> valuesSourceType, ValueType targetValueType) {
+    protected ValuesSourceAggregatorFactory(String name, String type, ValuesSourceType valuesSourceType, ValueType targetValueType) {
         super(name, type);
         this.valuesSourceType = valuesSourceType;
         this.targetValueType = targetValueType;
@@ -219,17 +219,17 @@ public abstract class ValuesSourceAggregatorFactory<VS extends ValuesSource> ext
 
         if (field == null) {
             if (script == null) {
-                ValuesSourceConfig<VS> config = new ValuesSourceConfig(ValuesSource.class);
+                ValuesSourceConfig<VS> config = new ValuesSourceConfig(ValuesSourceType.ANY);
                 config.format = resolveFormat(null, valueType);
                 return config;
             }
-            Class valuesSourceType = valueType != null ? (Class<VS>) valueType.getValuesSourceType() : this.valuesSourceType;
-            if (valuesSourceType == null || valuesSourceType == ValuesSource.class) {
+            ValuesSourceType valuesSourceType = valueType != null ? valueType.getValuesSourceType() : this.valuesSourceType;
+            if (valuesSourceType == null || valuesSourceType == ValuesSourceType.ANY) {
                 // the specific value source type is undefined, but for scripts,
                 // we need to have a specific value source
                 // type to know how to handle the script values, so we fallback
                 // on Bytes
-                valuesSourceType = ValuesSource.Bytes.class;
+                valuesSourceType = ValuesSourceType.BYTES;
             }
             ValuesSourceConfig<VS> config = new ValuesSourceConfig<VS>(valuesSourceType);
             config.missing = missing;
@@ -241,7 +241,7 @@ public abstract class ValuesSourceAggregatorFactory<VS extends ValuesSource> ext
 
         MappedFieldType fieldType = context.searchContext().smartNameFieldTypeFromAnyType(field);
         if (fieldType == null) {
-            Class<VS> valuesSourceType = valueType != null ? (Class<VS>) valueType.getValuesSourceType() : this.valuesSourceType;
+            ValuesSourceType valuesSourceType = valueType != null ? valueType.getValuesSourceType() : this.valuesSourceType;
             ValuesSourceConfig<VS> config = new ValuesSourceConfig<>(valuesSourceType);
             config.missing = missing;
             config.format = resolveFormat(format, valueType);
@@ -256,13 +256,13 @@ public abstract class ValuesSourceAggregatorFactory<VS extends ValuesSource> ext
         IndexFieldData<?> indexFieldData = context.searchContext().fieldData().getForField(fieldType);
 
         ValuesSourceConfig config;
-        if (valuesSourceType == ValuesSource.class) {
+        if (valuesSourceType == ValuesSourceType.ANY) {
             if (indexFieldData instanceof IndexNumericFieldData) {
-                config = new ValuesSourceConfig<>(ValuesSource.Numeric.class);
+                config = new ValuesSourceConfig<>(ValuesSourceType.NUMERIC);
             } else if (indexFieldData instanceof IndexGeoPointFieldData) {
-                config = new ValuesSourceConfig<>(ValuesSource.GeoPoint.class);
+                config = new ValuesSourceConfig<>(ValuesSourceType.GEOPOINT);
             } else {
-                config = new ValuesSourceConfig<>(ValuesSource.Bytes.class);
+                config = new ValuesSourceConfig<>(ValuesSourceType.BYTES);
             }
         } else {
             config = new ValuesSourceConfig(valuesSourceType);
@@ -314,13 +314,14 @@ public abstract class ValuesSourceAggregatorFactory<VS extends ValuesSource> ext
             boolean collectsFromSingleBucket, List<PipelineAggregator> pipelineAggregators, Map<String, Object> metaData)
             throws IOException;
 
-    private void resolveValuesSourceConfigFromAncestors(String aggName, AggregatorFactory parent, Class<VS> requiredValuesSourceType) {
+    private void resolveValuesSourceConfigFromAncestors(String aggName, AggregatorFactory parent, ValuesSourceType requiredValuesSourceType) {
         ValuesSourceConfig config;
         while (parent != null) {
             if (parent instanceof ValuesSourceAggregatorFactory) {
                 config = ((ValuesSourceAggregatorFactory) parent).config;
                 if (config != null && config.valid()) {
-                    if (requiredValuesSourceType == null || requiredValuesSourceType.isAssignableFrom(config.valueSourceType)) {
+                    if (requiredValuesSourceType == null || requiredValuesSourceType == ValuesSourceType.ANY
+                            || requiredValuesSourceType == config.valueSourceType) {
                         ValueFormat format = config.format;
                         this.config = config;
                         // if the user explicitly defined a format pattern,
@@ -340,8 +341,7 @@ public abstract class ValuesSourceAggregatorFactory<VS extends ValuesSource> ext
 
     @Override
     public void doWriteTo(StreamOutput out) throws IOException {
-        out.writeOptionalString(valuesSourceType.getName()); // NOCOMMIT write
-                                                             // this properly
+        valuesSourceType.writeTo(out);
         boolean hasTargetValueType = targetValueType != null;
         out.writeBoolean(hasTargetValueType);
         if (hasTargetValueType) {
@@ -374,13 +374,7 @@ public abstract class ValuesSourceAggregatorFactory<VS extends ValuesSource> ext
 
     @Override
     protected ValuesSourceAggregatorFactory<VS> doReadFrom(String name, StreamInput in) throws IOException {
-        Class<VS> valuesSourceType;
-        String valueSourceTypeClassName = in.readOptionalString(); // NOCOMMIT read this properly
-        try {
-            valuesSourceType = (Class<VS>) Class.forName(valueSourceTypeClassName);
-        } catch (ClassNotFoundException e) {
-            throw new IOException("Could not load targetValueSource [" + valueSourceTypeClassName + "] for aggregation [" + name + "]", e);
-        }
+        ValuesSourceType valuesSourceType = ValuesSourceType.ANY.readFrom(in);
         ValueType targetValueType = null;
         if (in.readBoolean()) {
             targetValueType = ValueType.STRING.readFrom(in);
@@ -402,7 +396,7 @@ public abstract class ValuesSourceAggregatorFactory<VS extends ValuesSource> ext
     }
 
     // NORELEASE make this abstract when agg refactor complete
-    protected ValuesSourceAggregatorFactory<VS> innerReadFrom(String name, Class<VS> valuesSourceType, ValueType targetValueType,
+    protected ValuesSourceAggregatorFactory<VS> innerReadFrom(String name, ValuesSourceType valuesSourceType, ValueType targetValueType,
             StreamInput in) throws IOException {
         return null;
     }
@@ -437,7 +431,7 @@ public abstract class ValuesSourceAggregatorFactory<VS extends ValuesSource> ext
 
     @Override
     public int doHashCode() {
-        return Objects.hash(field, format, missing, script, targetValueType, timeZone, valueType, valuesSourceType.getName(),
+        return Objects.hash(field, format, missing, script, targetValueType, timeZone, valueType, valuesSourceType,
                 innerHashCode());
     }
 
@@ -465,7 +459,7 @@ public abstract class ValuesSourceAggregatorFactory<VS extends ValuesSource> ext
             return false;
         if (!Objects.equals(valueType, other.valueType))
             return false;
-        if (!Objects.equals(valuesSourceType.getName(), other.valuesSourceType.getName()))
+        if (!Objects.equals(valuesSourceType, other.valuesSourceType))
             return false;
         return innerEquals(obj);
     }

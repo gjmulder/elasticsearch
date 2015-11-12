@@ -47,6 +47,7 @@ import org.elasticsearch.search.aggregations.support.ValuesSource;
 import org.elasticsearch.search.aggregations.support.ValuesSourceAggregatorFactory;
 import org.elasticsearch.search.aggregations.support.ValuesSourceConfig;
 import org.elasticsearch.search.aggregations.support.ValuesSourceParser;
+import org.elasticsearch.search.aggregations.support.ValuesSourceType;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -232,7 +233,7 @@ public class ParentToChildrenAggregator extends SingleBucketAggregator {
         }
 
         private void resolveConfig(AggregationContext aggregationContext) {
-            config = new ValuesSourceConfig<>(ValuesSource.Bytes.WithOrdinals.ParentChild.class);
+            config = new ValuesSourceConfig<>(ValuesSourceType.BYTES);
             DocumentMapper childDocMapper = aggregationContext.searchContext().mapperService().documentMapper(childType);
 
             if (childDocMapper != null) {

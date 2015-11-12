@@ -35,18 +35,17 @@ import java.io.IOException;
 public enum ValueType implements Writeable<ValueType> {
 
     @Deprecated
-    ANY((byte) 0, "any", ValuesSource.class, IndexFieldData.class, ValueFormat.RAW), 
-    STRING((byte) 1, "string", ValuesSource.Bytes.class,
+    ANY((byte) 0, "any", ValuesSourceType.ANY, IndexFieldData.class, ValueFormat.RAW), STRING((byte) 1, "string", ValuesSourceType.BYTES,
             IndexFieldData.class,
             ValueFormat.RAW),
-    LONG((byte) 2, "byte|short|integer|long", ValuesSource.Numeric.class,
+ LONG((byte) 2, "byte|short|integer|long", ValuesSourceType.NUMERIC,
             IndexNumericFieldData.class, ValueFormat.RAW) {
         @Override
         public boolean isNumeric() {
             return true;
         }
     },
-    DOUBLE((byte) 3, "float|double", ValuesSource.Numeric.class, IndexNumericFieldData.class, ValueFormat.RAW) {
+    DOUBLE((byte) 3, "float|double", ValuesSourceType.NUMERIC, IndexNumericFieldData.class, ValueFormat.RAW) {
         @Override
         public boolean isNumeric() {
             return true;
@@ -57,31 +56,31 @@ public enum ValueType implements Writeable<ValueType> {
             return true;
         }
     },
-    NUMBER((byte) 4, "number", ValuesSource.Numeric.class, IndexNumericFieldData.class, ValueFormat.RAW) {
+    NUMBER((byte) 4, "number", ValuesSourceType.NUMERIC, IndexNumericFieldData.class, ValueFormat.RAW) {
         @Override
         public boolean isNumeric() {
             return true;
         }
     },
-    DATE((byte) 5, "date", ValuesSource.Numeric.class, IndexNumericFieldData.class, ValueFormat.DateTime.DEFAULT) {
+    DATE((byte) 5, "date", ValuesSourceType.NUMERIC, IndexNumericFieldData.class, ValueFormat.DateTime.DEFAULT) {
         @Override
         public boolean isNumeric() {
             return true;
         }
     },
-    IP((byte) 6, "ip", ValuesSource.Numeric.class, IndexNumericFieldData.class, ValueFormat.IPv4) {
+    IP((byte) 6, "ip", ValuesSourceType.NUMERIC, IndexNumericFieldData.class, ValueFormat.IPv4) {
         @Override
         public boolean isNumeric() {
             return true;
         }
     },
-    NUMERIC((byte) 7, "numeric", ValuesSource.Numeric.class, IndexNumericFieldData.class, ValueFormat.RAW) {
+    NUMERIC((byte) 7, "numeric", ValuesSourceType.NUMERIC, IndexNumericFieldData.class, ValueFormat.RAW) {
         @Override
         public boolean isNumeric() {
             return true;
         }
     },
-    GEOPOINT((byte) 8, "geo_point", ValuesSource.GeoPoint.class, IndexGeoPointFieldData.class, ValueFormat.RAW) {
+    GEOPOINT((byte) 8, "geo_point", ValuesSourceType.GEOPOINT, IndexGeoPointFieldData.class, ValueFormat.RAW) {
         @Override
         public boolean isGeoPoint() {
             return true;
@@ -89,12 +88,13 @@ public enum ValueType implements Writeable<ValueType> {
     };
 
     final String description;
-    final Class<? extends ValuesSource> valuesSourceType;
+    final ValuesSourceType valuesSourceType;
     final Class<? extends IndexFieldData> fieldDataType;
     final ValueFormat defaultFormat;
     private final byte id;
 
-    private ValueType(byte id, String description, Class<? extends ValuesSource> valuesSourceType, Class<? extends IndexFieldData> fieldDataType, ValueFormat defaultFormat) {
+    private ValueType(byte id, String description, ValuesSourceType valuesSourceType, Class<? extends IndexFieldData> fieldDataType,
+            ValueFormat defaultFormat) {
         this.id = id;
         this.description = description;
         this.valuesSourceType = valuesSourceType;
@@ -106,7 +106,7 @@ public enum ValueType implements Writeable<ValueType> {
         return description;
     }
 
-    public Class<? extends ValuesSource> getValuesSourceType() {
+    public ValuesSourceType getValuesSourceType() {
         return valuesSourceType;
     }
 
@@ -115,7 +115,7 @@ public enum ValueType implements Writeable<ValueType> {
     }
 
     public boolean isA(ValueType valueType) {
-        return valueType.valuesSourceType.isAssignableFrom(valuesSourceType) &&
+        return valueType.valuesSourceType == valuesSourceType &&
                 valueType.fieldDataType.isAssignableFrom(fieldDataType);
     }
 

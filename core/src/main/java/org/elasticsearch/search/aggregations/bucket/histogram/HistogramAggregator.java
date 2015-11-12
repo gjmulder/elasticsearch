@@ -187,7 +187,7 @@ public class HistogramAggregator extends BucketsAggregator {
                 return asMultiBucketAggregator(this, aggregationContext, parent);
             }
             // we need to round the bounds given by the user and we have to do
-            // it for every aggregator we crate
+            // it for every aggregator we create
             // as the rounding is not necessarily an idempotent operation.
             // todo we need to think of a better structure to the factory/agtor
             // code so we won't need to do that

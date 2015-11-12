@@ -244,7 +244,6 @@ public class ParentToChildrenAggregator extends SingleBucketAggregator {
                 parentType = parentFieldMapper.type();
                 DocumentMapper parentDocMapper = aggregationContext.searchContext().mapperService().documentMapper(parentType);
                 if (parentDocMapper != null) {
-                    // TODO: use the query API
                     parentFilter = parentDocMapper.typeFilter();
                     childFilter = childDocMapper.typeFilter();
                     ParentChildIndexFieldData parentChildIndexFieldData = aggregationContext.searchContext().fieldData()

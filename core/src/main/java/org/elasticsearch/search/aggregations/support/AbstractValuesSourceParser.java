@@ -74,8 +74,7 @@ public abstract class AbstractValuesSourceParser<VS extends ValuesSource> implem
     private Class<VS> valuesSourceType = null;
     private ValueType targetValueType = null;
 
-    private AbstractValuesSourceParser(boolean scriptable,
- boolean formattable, boolean timezoneAware, Class<VS> valuesSourceType,
+    private AbstractValuesSourceParser(boolean scriptable, boolean formattable, boolean timezoneAware, Class<VS> valuesSourceType,
             ValueType targetValueType) {
         this.timezoneAware = timezoneAware;
         this.valuesSourceType = valuesSourceType;

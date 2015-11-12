@@ -104,46 +104,88 @@ public abstract class ValuesSourceAggregatorFactory<VS extends ValuesSource> ext
         this.targetValueType = targetValueType;
     }
 
+    /**
+     * Sets the field to use for this aggregation.
+     */
     public void field(String field) {
         this.field = field;
     }
 
+    /**
+     * Gets the field to use for this aggregation.
+     */
     public String field() {
         return field;
     }
 
+    /**
+     * Sets the script to use for this aggregation.
+     */
     public void script(Script script) {
         this.script = script;
     }
 
+    /**
+     * Gets the script to use for this aggregation.
+     */
     public Script script() {
         return script;
     }
 
+    /**
+     * Sets the {@link ValueType} for the value produced by this aggregation
+     */
     public void valueType(ValueType valueType) {
         this.valueType = valueType;
     }
 
+    /**
+     * Gets the {@link ValueType} for the value produced by this aggregation
+     */
+    public ValueType valueType() {
+        return valueType;
+    }
+
+    /**
+     * Sets the format to use for the output of the aggregation.
+     */
     public void format(String format) {
         this.format = format;
     }
 
+    /**
+     * Gets the format to use for the output of the aggregation.
+     */
     public String format() {
         return format;
     }
 
+    /**
+     * Sets the value to use when the aggregation finds a missing value in a
+     * document
+     */
     public void missing(Object missing) {
         this.missing = missing;
     }
 
+    /**
+     * Gets the value to use when the aggregation finds a missing value in a
+     * document
+     */
     public Object missing() {
         return missing;
     }
 
+    /**
+     * Sets the time zone to use for this aggregation
+     */
     public void timeZone(DateTimeZone timeZone) {
         this.timeZone = timeZone;
     }
 
+    /**
+     * Gets the time zone to use for this aggregation
+     */
     public DateTimeZone timeZone() {
         return timeZone;
     }

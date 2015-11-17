@@ -47,6 +47,7 @@ import org.elasticsearch.search.aggregations.support.ValuesSource.Numeric;
 import org.elasticsearch.search.aggregations.support.ValuesSourceAggregatorFactory;
 import org.elasticsearch.search.aggregations.support.ValuesSourceType;
 import org.elasticsearch.search.aggregations.support.format.ValueFormatter;
+import org.joda.time.DateTimeZone;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -476,6 +477,31 @@ public class HistogramAggregator extends BucketsAggregator {
             DateHistogramFactory other = (DateHistogramFactory) obj;
             return super.innerEquals(obj)
                     && Objects.equals(dateHistogramInterval, other.dateHistogramInterval);
+        }
+    }
+
+    public static class DateHistogramFactory extends Factory {
+
+        private DateTimeZone timeZone;
+
+        public DateHistogramFactory(String name, ValuesSourceParser.Input<Numeric> input, Rounding rounding, InternalOrder order,
+                boolean keyed, long minDocCount, ExtendedBounds extendedBounds, InternalHistogram.Factory<?> histogramFactory) {
+            super(name, input, rounding, order, keyed, minDocCount, extendedBounds, histogramFactory);
+            this.timeZone = input.timezone();
+        }
+
+        @Override
+        protected Aggregator createUnmapped(AggregationContext aggregationContext, Aggregator parent,
+                List<PipelineAggregator> pipelineAggregators, Map<String, Object> metaData) throws IOException {
+            return super.createUnmapped(aggregationContext, parent, pipelineAggregators, metaData);
+        }
+
+        @Override
+        protected Aggregator doCreateInternal(Numeric valuesSource, AggregationContext aggregationContext, Aggregator parent,
+                boolean collectsFromSingleBucket, List<PipelineAggregator> pipelineAggregators, Map<String, Object> metaData)
+                throws IOException {
+            return super
+                    .doCreateInternal(valuesSource, aggregationContext, parent, collectsFromSingleBucket, pipelineAggregators, metaData);
         }
     }
 }

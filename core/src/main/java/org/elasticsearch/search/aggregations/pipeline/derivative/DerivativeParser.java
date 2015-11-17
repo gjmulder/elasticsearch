@@ -108,4 +108,10 @@ public class DerivativeParser implements PipelineAggregator.Parser {
         return new DerivativePipelineAggregator.Factory(null, null);
     }
 
+    // NORELEASE implement this method when refactoring this aggregation
+    @Override
+    public PipelineAggregatorFactory getFactoryPrototype() {
+        return null;
+    }
+
 }

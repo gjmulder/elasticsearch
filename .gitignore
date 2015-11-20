@@ -16,6 +16,7 @@ docs/build.log
 backwards/
 html_docs
 .vagrant/
+extra-plugins/
 
 ## eclipse ignores (use 'mvn eclipse:eclipse' to build eclipse projects)
 ## All files (.project, .classpath, .settings/*) should be generated through Maven which

@@ -246,6 +246,10 @@ public class InternalHistogram<B extends InternalHistogram.Bucket> extends Inter
             return ValueType.NUMERIC;
         }
 
+        public ValueType valueType() {
+            return ValueType.NUMERIC;
+        }
+
         public InternalHistogram<B> create(String name, List<B> buckets, InternalOrder order, long minDocCount,
                 EmptyBucketInfo emptyBucketInfo, ValueFormatter formatter, boolean keyed,
                 List<PipelineAggregator> pipelineAggregators,

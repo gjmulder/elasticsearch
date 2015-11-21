@@ -77,6 +77,11 @@ public class InternalDateHistogram {
         }
 
         @Override
+        public ValueType valueType() {
+            return ValueType.DATE;
+        }
+
+        @Override
         public InternalDateHistogram.Bucket createBucket(InternalAggregations aggregations, InternalDateHistogram.Bucket prototype) {
             return new Bucket(prototype.key, prototype.docCount, aggregations, prototype.getKeyed(), prototype.formatter, this);
         }

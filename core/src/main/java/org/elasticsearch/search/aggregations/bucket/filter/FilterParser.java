@@ -65,4 +65,10 @@ public class FilterParser implements Aggregator.Parser {
         return new AggregatorFactory[] { new FilterAggregator.Factory(null) };
     }
 
+    // NORELEASE implement this method when refactoring this aggregation
+    @Override
+    public AggregatorFactory[] getFactoryPrototypes() {
+        return null;
+    }
+
 }

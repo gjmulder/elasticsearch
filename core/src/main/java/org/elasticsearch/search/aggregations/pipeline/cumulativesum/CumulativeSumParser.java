@@ -95,4 +95,10 @@ public class CumulativeSumParser implements PipelineAggregator.Parser {
         return new CumulativeSumPipelineAggregator.Factory(null, null);
     }
 
+    // NORELEASE implement this method when refactoring this aggregation
+    @Override
+    public PipelineAggregatorFactory getFactoryPrototype() {
+        return null;
+    }
+
 }

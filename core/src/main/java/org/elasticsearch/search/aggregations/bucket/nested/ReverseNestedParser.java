@@ -69,4 +69,10 @@ public class ReverseNestedParser implements Aggregator.Parser {
     public AggregatorFactory[] getFactoryPrototypes() {
         return new AggregatorFactory[] { new ReverseNestedAggregator.Factory(null) };
     }
+
+    // NORELEASE implement this method when refactoring this aggregation
+    @Override
+    public AggregatorFactory[] getFactoryPrototypes() {
+        return null;
+    }
 }

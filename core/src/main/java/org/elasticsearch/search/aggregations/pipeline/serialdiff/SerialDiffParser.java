@@ -118,4 +118,10 @@ public class SerialDiffParser implements PipelineAggregator.Parser {
         return new SerialDiffPipelineAggregator.Factory(null, null);
     }
 
+    // NORELEASE implement this method when refactoring this aggregation
+    @Override
+    public PipelineAggregatorFactory getFactoryPrototype() {
+        return null;
+    }
+
 }

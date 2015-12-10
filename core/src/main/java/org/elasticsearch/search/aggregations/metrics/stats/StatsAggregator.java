@@ -204,6 +204,32 @@ public class StatsAggregator extends NumericMetricsAggregator.MultiValue {
         protected boolean innerEquals(Object obj) {
             return true;
         }
+
+        @Override
+        protected ValuesSourceAggregatorFactory<Numeric> innerReadFrom(String name, ValuesSourceType valuesSourceType,
+                ValueType targetValueType, StreamInput in) {
+            return new StatsAggegator.Factory(name);
+        }
+
+        @Override
+        protected void innerWriteTo(StreamOutput out) {
+            // Do nothing, no extra state to write to stream
+        }
+
+        @Override
+        public XContentBuilder doXContentBody(XContentBuilder builder, Params params) throws IOException {
+            return builder;
+        }
+
+        @Override
+        protected int innerHashCode() {
+            return 0;
+        }
+
+        @Override
+        protected boolean innerEquals(Object obj) {
+            return true;
+        }
     }
 
     @Override

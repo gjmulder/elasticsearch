@@ -72,4 +72,10 @@ public class IpRangeParser extends RangeParser {
         return new AggregatorFactory[] { new IPv4RangeAggregatorFactory(null, Collections.emptyList()) };
     }
 
+    // NORELEASE implement this method when refactoring this aggregation
+    @Override
+    public AggregatorFactory[] getFactoryPrototypes() {
+        return null;
+    }
+
 }

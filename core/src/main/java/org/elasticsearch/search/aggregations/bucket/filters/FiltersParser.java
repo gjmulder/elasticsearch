@@ -147,4 +147,10 @@ public class FiltersParser implements Aggregator.Parser {
         return new AggregatorFactory[] { new FiltersAggregator.Factory(null, Collections.emptyList()) };
     }
 
+    // NORELEASE implement this method when refactoring this aggregation
+    @Override
+    public AggregatorFactory[] getFactoryPrototypes() {
+        return null;
+    }
+
 }

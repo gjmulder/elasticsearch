@@ -210,7 +210,7 @@ public class SearchService extends AbstractLifecycleComponent<SearchService> imp
 
     private void setDefaultSearchTimeout(TimeValue defaultSearchTimeout) {
         this.defaultSearchTimeout = defaultSearchTimeout;
-    }
+            }
 
     @Override
     public void afterIndexClosed(Index index, Settings indexSettings) {

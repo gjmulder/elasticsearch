@@ -240,6 +240,7 @@ public class SignificantTermsAggregatorFactory extends ValuesSourceAggregatorFac
     protected Aggregator createUnmapped(AggregationContext aggregationContext, Aggregator parent,
             List<PipelineAggregator> pipelineAggregators,
             Map<String, Object> metaData) throws IOException {
+        setFieldInfo();
         final InternalAggregation aggregation = new UnmappedSignificantTerms(name, bucketCountThresholds.getRequiredSize(),
                 bucketCountThresholds.getMinDocCount(), pipelineAggregators, metaData);
         return new NonCollectingAggregator(name, aggregationContext, parent, pipelineAggregators, metaData) {
@@ -254,6 +255,7 @@ public class SignificantTermsAggregatorFactory extends ValuesSourceAggregatorFac
     protected Aggregator doCreateInternal(ValuesSource valuesSource, AggregationContext aggregationContext, Aggregator parent,
             boolean collectsFromSingleBucket, List<PipelineAggregator> pipelineAggregators, Map<String, Object> metaData)
             throws IOException {
+        setFieldInfo();
         if (collectsFromSingleBucket == false) {
             return asMultiBucketAggregator(this, aggregationContext, parent);
         }

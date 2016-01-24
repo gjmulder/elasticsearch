@@ -17,17 +17,20 @@
  * under the License.
  */
 
-package org.elasticsearch.search.aggregations.metrics.geocentroid;
+package org.elasticsearch.index.mapper.size;
 
-import org.elasticsearch.search.aggregations.metrics.ValuesSourceMetricsAggregationBuilder;
+import org.elasticsearch.common.inject.Inject;
+import org.elasticsearch.index.AbstractIndexComponent;
+import org.elasticsearch.index.Index;
+import org.elasticsearch.index.mapper.MapperService;
+import org.elasticsearch.index.settings.IndexSettingsService;
 
-/**
- * Builder class for {@link org.elasticsearch.search.aggregations.metrics.geocentroid.GeoCentroidAggregator}
- */
-public class GeoCentroidBuilder extends ValuesSourceMetricsAggregationBuilder<GeoCentroidBuilder> {
+public class RegisterSizeFieldMapper extends AbstractIndexComponent {
 
-    public GeoCentroidBuilder(String name) {
-        super(name, InternalGeoCentroid.TYPE.name());
+    @Inject
+    public RegisterSizeFieldMapper(Index index, IndexSettingsService indexSettingsService, MapperService mapperService) {
+        super(index, indexSettingsService.getSettings());
+        mapperService.documentMapperParser().putRootTypeParser(SizeFieldMapper.NAME, new SizeFieldMapper.TypeParser());
     }
 
 }

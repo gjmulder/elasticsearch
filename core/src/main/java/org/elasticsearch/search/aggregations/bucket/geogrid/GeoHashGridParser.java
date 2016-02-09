@@ -278,4 +278,10 @@ public class GeoHashGridParser extends GeoPointValuesSourceParser {
 
         }
     }
+    // NORELEASE implement this method when refactoring this aggregation
+    @Override
+    public AggregatorFactory getFactoryPrototype() {
+        return null;
+    }
+
 }

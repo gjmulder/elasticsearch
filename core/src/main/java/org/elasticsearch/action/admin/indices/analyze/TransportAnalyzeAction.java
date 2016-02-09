@@ -421,11 +421,8 @@ public class TransportAnalyzeAction extends TransportSingleShardAction<AnalyzeRe
 
                 lastPosition += analyzer.getPositionIncrementGap(field);
                 lastOffset += analyzer.getOffsetGap(field);
-
             } catch (IOException e) {
                 throw new ElasticsearchException("failed to analyze", e);
-            } finally {
-                IOUtils.closeWhileHandlingException(stream);
             }
         }
 

@@ -45,6 +45,9 @@ public class IndexingMemoryControllerTests extends ESSingleNodeTestCase {
         final Map<IndexShard, Long> lastIndexTimeNanos = new HashMap<>();
         final Set<IndexShard> activeShards = new HashSet<>();
 
+        final Map<ShardId, Long> lastIndexTimeNanos = new HashMap<>();
+        final Set<ShardId> activeShards = new HashSet<>();
+
         long currentTimeSec = TimeValue.timeValueNanos(System.nanoTime()).seconds();
 
         public MockController(Settings settings) {
@@ -101,6 +104,21 @@ public class IndexingMemoryControllerTests extends ESSingleNodeTestCase {
                 indexingBuffers.put(shard, INACTIVE);
                 translogBuffers.put(shard, INACTIVE);
                 activeShards.remove(shard);
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        protected Boolean checkIdle(ShardId shardId, long inactiveTimeNS) {
+            Long ns = lastIndexTimeNanos.get(shardId);
+            if (ns == null) {
+                return null;
+            } else if (currentTimeInNanos() - ns >= inactiveTimeNS) {
+                indexingBuffers.put(shardId, INACTIVE);
+                translogBuffers.put(shardId, INACTIVE);
+                activeShards.remove(shardId);
                 return true;
             } else {
                 return false;

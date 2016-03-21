@@ -28,8 +28,14 @@ import org.elasticsearch.cluster.metadata.IndexMetaData;
 import org.elasticsearch.cluster.metadata.MetaData;
 import org.elasticsearch.cluster.node.DiscoveryNodes;
 import org.elasticsearch.cluster.routing.allocation.AllocationService;
+import org.elasticsearch.cluster.routing.allocation.FailedRerouteAllocation;
+import org.elasticsearch.cluster.routing.allocation.RoutingAllocation;
+import org.elasticsearch.cluster.routing.allocation.StartedRerouteAllocation;
+import org.elasticsearch.cluster.routing.allocation.allocator.ShardsAllocators;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.gateway.GatewayAllocator;
+import org.elasticsearch.node.settings.NodeSettingsService;
 import org.elasticsearch.test.ESAllocationTestCase;
 import org.elasticsearch.test.cluster.TestClusterService;
 import org.elasticsearch.threadpool.ThreadPool;
@@ -37,6 +43,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -263,6 +271,48 @@ public class RoutingServiceTests extends ESAllocationTestCase {
         @Override
         protected void performReroute(String reason) {
             rerouted.set(true);
+        }
+    }
+
+    /**
+     * Mocks behavior in ReplicaShardAllocator to remove delayed shards from list of unassigned shards so they don't get reassigned yet.
+     * It does not implement the full logic but shards that are to be delayed need to be explicitly set using the method setShardsToDelay(...).
+     */
+    private static class DelayedShardsMockGatewayAllocator extends GatewayAllocator {
+        volatile List<ShardRouting> delayedShards = Collections.emptyList();
+
+        public DelayedShardsMockGatewayAllocator() {
+            super(Settings.EMPTY, null, null);
+        }
+
+        @Override
+        public void applyStartedShards(StartedRerouteAllocation allocation) {}
+
+        @Override
+        public void applyFailedShards(FailedRerouteAllocation allocation) {}
+
+        /**
+         * Explicitly set which shards should be delayed in the next allocateUnassigned calls
+         */
+        public void setShardsToDelay(List<ShardRouting> delayedShards) {
+            this.delayedShards = delayedShards;
+        }
+
+        @Override
+        public boolean allocateUnassigned(RoutingAllocation allocation) {
+            final RoutingNodes routingNodes = allocation.routingNodes();
+            final RoutingNodes.UnassignedShards.UnassignedIterator unassignedIterator = routingNodes.unassigned().iterator();
+            boolean changed = false;
+            while (unassignedIterator.hasNext()) {
+                ShardRouting shard = unassignedIterator.next();
+                for (ShardRouting shardToDelay : delayedShards) {
+                    if (shard.isSameShard(shardToDelay)) {
+                        changed = true;
+                        unassignedIterator.removeAndIgnore();
+                    }
+                }
+            }
+            return changed;
         }
     }
 }

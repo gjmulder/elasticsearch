@@ -169,6 +169,7 @@ final class Security {
                         // just be paranoid ok?
                         throw new IllegalStateException("per-plugin permissions already granted for jar file: " + url);
                     }
+                    System.setProperty(prop, url.toString());
                 }
             }
         }

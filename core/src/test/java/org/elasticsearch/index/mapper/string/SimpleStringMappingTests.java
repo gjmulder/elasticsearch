@@ -621,4 +621,59 @@ public class SimpleStringMappingTests extends ESSingleNodeTestCase {
             assertThat(e.getMessage(), equalTo("analyzer on field [field1] must be set when search_analyzer is set"));
         }
     }
+
+    /**
+     * Test backward compatibility when a search_analyzer is specified without
+     * an index_analyzer
+     */
+    public void testBackwardCompatibleSearchAnalyzerMigration() throws Exception {
+
+        Settings settings = Settings.settingsBuilder()
+                .put(IndexMetaData.SETTING_VERSION_CREATED, VersionUtils.randomVersionBetween(random(), Version.V_1_0_0, Version.V_1_7_1))
+                .build();
+
+        DocumentMapperParser parser = createIndex("backward_compatible_index", settings).mapperService().documentMapperParser();
+
+        String mapping = XContentFactory.jsonBuilder().startObject().startObject("type").startObject("properties").startObject("field1")
+                .field("type", "string").field("search_analyzer", "keyword").endObject().endObject().endObject().endObject().string();
+        parser.parse(mapping);
+
+        assertThat(parser.parse(mapping).mapping().toString(), containsString("\"search_analyzer\":\"keyword\""));
+        assertThat(parser.parse(mapping).mapping().toString(), containsString("\"analyzer\":\"default\""));
+        assertThat(parser.parse(mapping).mapping(), notNullValue());
+        assertThat(parser.parse(mapping).mapping().root(), notNullValue());
+        Mapper mapper = parser.parse(mapping).mapping().root().getMapper("field1");
+        assertThat(mapper, notNullValue());
+        assertThat(mapper, instanceOf(StringFieldMapper.class));
+        StringFieldMapper stringMapper = (StringFieldMapper) mapper;
+        MappedFieldType fieldType = stringMapper.fieldType();
+        assertThat(fieldType, notNullValue());
+        assertThat(fieldType.indexAnalyzer(), notNullValue());
+        assertThat(fieldType.indexAnalyzer().name(), equalTo("default"));
+        assertThat(fieldType.searchAnalyzer().name(), equalTo("keyword"));
+    }
+
+    /**
+     * Test for indexes created on or after 2.0 an index analyzer must be
+     * specified when declaring a search analyzer
+     */
+    public void testSearchAnalyzer() throws Exception {
+
+        try {
+            Settings settings = Settings
+                    .settingsBuilder()
+                    .put(IndexMetaData.SETTING_VERSION_CREATED,
+                            VersionUtils.randomVersionBetween(random(), Version.V_2_0_0, Version.CURRENT)).build();
+
+            DocumentMapperParser parser = createIndex("index", settings).mapperService().documentMapperParser();
+
+            String mapping = XContentFactory.jsonBuilder().startObject().startObject("type").startObject("properties")
+                    .startObject("field1").field("type", "string").field("search_analyzer", "keyword").endObject().endObject().endObject()
+                    .endObject().string();
+            parser.parse(mapping);
+            fail("Expected a MapperParsingException");
+        } catch (MapperParsingException e) {
+            assertThat(e.getMessage(), equalTo("analyzer on field [field1] must be set when search_analyzer is set"));
+        }
+    }
 }
